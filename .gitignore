@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+env/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Firebase
+firebase-adminsdk*.json
+serviceAccountKey.json
+
+# Docker
+.dockerignore
+
+# Migrations (keep structure, ignore local db data)
+alembic/versions/*.pyc
+
+# Misc
+.DS_Store
+*.log
