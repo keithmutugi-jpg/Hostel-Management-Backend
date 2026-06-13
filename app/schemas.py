@@ -35,7 +35,7 @@ class UserOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserLogin(BaseModel):
@@ -64,7 +64,7 @@ class RoomBase(BaseModel):
     description: str | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class MaintenanceRequestCreate(BaseModel):
@@ -80,7 +80,7 @@ class MaintenanceRequestOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PaymentInitiate(BaseModel):
@@ -97,7 +97,7 @@ class PaymentOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoomApplicationOut(BaseModel):
@@ -109,11 +109,11 @@ class RoomApplicationOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AdminApplicationUpdate(BaseModel):
-    status: str = Field(..., regex="^(pending|approved|rejected)$")
+    status: str = Field(..., pattern="^(pending|approved|rejected)$")
     notes: str | None = None
 
 
