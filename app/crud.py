@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models import User, Room, RoomApplication, Payment, MaintenanceRequest, UserRole, PaymentStatus
+from app.models import User, Room, RoomApplication, Payment, MaintenanceRequest, UserRole, PaymentStatus, RoomType
 from app.security import get_password_hash, verify_password
 
 
