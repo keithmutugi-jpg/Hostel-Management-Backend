@@ -59,3 +59,5 @@ docker run -e SECRET_KEY=supersecretkey -e DATABASE_URL=postgresql://postgres:po
 - Use PostgreSQL in production.
 - Keep Firebase service account keys out of version control.
 - Use the `/payments/mpesa/callback` endpoint as the Daraja callback URL.
+
+
