@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 venv/
+.venv/
 env/
 .env
 
@@ -22,4 +23,6 @@ alembic/versions/*.pyc
 
 # Misc
 .DS_Store
+.coverage
+.pytest_cache/
 *.log

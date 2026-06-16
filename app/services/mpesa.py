@@ -1,5 +1,5 @@
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 
@@ -22,7 +22,7 @@ def get_access_token() -> str:
 
 
 def _get_timestamp() -> str:
-    return datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    return datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
 
 
 def _get_password() -> str:

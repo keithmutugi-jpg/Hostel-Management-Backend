@@ -1,11 +1,29 @@
+from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator
+
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import auth_router, admin_router, payments_router, students_router
-from app.services import initialize_firebase
+from app.services import FirebaseConfigurationError, initialize_firebase
 
-app = FastAPI(title=settings.PROJECT_NAME)
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    initialize_firebase()
+    yield
+
+tags_metadata = [
+    {"name": "Root", "description": "Service health and welcome endpoint."},
+    {"name": "Auth", "description": "User signup, login, and current profile endpoints."},
+    {"name": "Students", "description": "Student room browsing, applications, maintenance, and payments."},
+    {"name": "Admin", "description": "Administrative room, application, maintenance, payment, and report operations."},
+    {"name": "Payments", "description": "Payment provider callbacks."},
+    {"name": "Upload", "description": "Optional Firebase-backed file upload."},
+]
+
+app = FastAPI(title=settings.PROJECT_NAME, openapi_tags=tags_metadata, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,11 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    initialize_firebase()
 
 
 @app.get("/", tags=["Root"])
@@ -34,7 +47,10 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="Firebase storage is not configured")
 
     data = await file.read()
-    public_url = upload_to_firebase(file.filename, data, file.content_type or "application/octet-stream")
+    try:
+        public_url = upload_to_firebase(file.filename, data, file.content_type or "application/octet-stream")
+    except FirebaseConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
     return {"url": public_url}
 
 

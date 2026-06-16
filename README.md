@@ -27,6 +27,7 @@ SECRET_KEY=supersecretkey
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/hostel_db
 FIREBASE_CREDENTIALS=
 FIREBASE_STORAGE_BUCKET=
+FIREBASE_PROJECT_ID=
 MPESA_CONSUMER_KEY=
 MPESA_CONSUMER_SECRET=
 MPESA_SHORTCODE=
@@ -38,6 +39,7 @@ MPESA_ENVIRONMENT=sandbox
 ## Run locally
 
 ```bash
+alembic upgrade head
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 

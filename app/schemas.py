@@ -19,6 +19,33 @@ class UserRole(str, Enum):
     admin = "admin"
 
 
+class RoomType(str, Enum):
+    single = "single"
+    double = "double"
+    triple = "triple"
+    quad = "quad"
+    ensuite = "ensuite"
+
+
+class ApplicationStatus(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
+
+class MaintenanceStatus(str, Enum):
+    open = "open"
+    in_progress = "in_progress"
+    resolved = "resolved"
+    closed = "closed"
+
+
+class PaymentStatus(str, Enum):
+    pending = "pending"
+    completed = "completed"
+    failed = "failed"
+
+
 class UserCreate(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=128)
     email: EmailStr
@@ -27,15 +54,14 @@ class UserCreate(BaseModel):
 
 
 class UserOut(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     full_name: str
     email: EmailStr
     role: UserRole
     is_active: bool
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class UserLogin(BaseModel):
@@ -45,17 +71,28 @@ class UserLogin(BaseModel):
 
 class RoomApplicationCreate(BaseModel):
     room_id: int
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=1000)
 
 
 class RoomCreate(BaseModel):
     number: str = Field(..., max_length=32)
-    room_type: str
+    room_type: RoomType
     capacity: int = Field(..., gt=0)
-    description: str | None = None
+    is_available: bool = True
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class RoomUpdate(BaseModel):
+    number: str | None = Field(default=None, max_length=32)
+    room_type: RoomType | None = None
+    capacity: int | None = Field(default=None, gt=0)
+    is_available: bool | None = None
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class RoomBase(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     number: str
     room_type: str
@@ -63,24 +100,29 @@ class RoomBase(BaseModel):
     is_available: bool
     description: str | None
 
-    class Config:
-        from_attributes = True
+
+class RoomOut(RoomBase):
+    occupied_beds: int
+    available_beds: int
 
 
 class MaintenanceRequestCreate(BaseModel):
     title: str = Field(..., max_length=128)
-    description: str
+    description: str = Field(..., min_length=5)
+
+
+class MaintenanceRequestStatusUpdate(BaseModel):
+    status: MaintenanceStatus
 
 
 class MaintenanceRequestOut(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     title: str
     description: str
-    status: str
+    status: MaintenanceStatus
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class PaymentInitiate(BaseModel):
@@ -89,32 +131,48 @@ class PaymentInitiate(BaseModel):
 
 
 class PaymentOut(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     amount: Decimal
     currency: str
-    status: str
+    status: PaymentStatus
     phone_number: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class RoomApplicationOut(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     room_id: int
     student_id: int
-    status: str
+    status: ApplicationStatus
     notes: str | None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class AdminApplicationUpdate(BaseModel):
-    status: str = Field(..., pattern="^(pending|approved|rejected)$")
-    notes: str | None = None
+    status: ApplicationStatus
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class OccupancyReport(BaseModel):
+    total_rooms: int
+    total_capacity: int
+    occupied_beds: int
+    available_beds: int
+    occupancy_rate: float
+    unavailable_rooms: int
+
+
+class PaymentReport(BaseModel):
+    total_payments: int
+    completed_payments: int
+    pending_payments: int
+    failed_payments: int
+    total_collected: Decimal
+    pending_amount: Decimal
 
 
 class MpesaCallbackMetaField(BaseModel):

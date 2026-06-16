@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric, Text, Enum as SQLAEnum
 from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class UserRole(str, Enum):
@@ -20,7 +24,7 @@ class User(Base):
     hashed_password = Column(String(length=256), nullable=False)
     role = Column(SQLAEnum(UserRole), default=UserRole.student, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     room_applications = relationship("RoomApplication", back_populates="student")
     payments = relationship("Payment", back_populates="user")
@@ -44,7 +48,7 @@ class Room(Base):
     capacity = Column(Integer, default=1, nullable=False)
     is_available = Column(Boolean, default=True, nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     applications = relationship("RoomApplication", back_populates="room")
 
@@ -57,10 +61,16 @@ class RoomApplication(Base):
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
     status = Column(String(length=32), default="pending", nullable=False)
     notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     student = relationship("User", back_populates="room_applications")
     room = relationship("Room", back_populates="applications")
+
+
+class ApplicationStatus(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
 
 
 class PaymentStatus(str, Enum):
@@ -80,7 +90,7 @@ class Payment(Base):
     mpesa_checkout_request_id = Column(String(length=128), nullable=True)
     mpesa_transaction_id = Column(String(length=128), nullable=True)
     phone_number = Column(String(length=32), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     user = relationship("User", back_populates="payments")
 
@@ -93,6 +103,13 @@ class MaintenanceRequest(Base):
     title = Column(String(length=128), nullable=False)
     description = Column(Text, nullable=False)
     status = Column(String(length=32), default="open", nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     student = relationship("User", back_populates="maintenance_requests")
+
+
+class MaintenanceStatus(str, Enum):
+    open = "open"
+    in_progress = "in_progress"
+    resolved = "resolved"
+    closed = "closed"

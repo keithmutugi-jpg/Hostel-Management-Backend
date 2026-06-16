@@ -10,34 +10,39 @@ from app.schemas import (
     PaymentOut,
     RoomApplicationCreate,
     RoomApplicationOut,
-    RoomBase,
+    RoomOut,
 )
 from app.services import mpesa
 
 router = APIRouter(prefix="/students", tags=["Students"])
 
 
-@router.get("/rooms", response_model=list[RoomBase])
+@router.get("/rooms", response_model=list[RoomOut], summary="Browse available rooms")
 def list_rooms(db: Session = Depends(get_db)):
     return crud.list_available_rooms(db)
 
 
-@router.post("/applications", response_model=RoomApplicationOut)
+@router.post("/applications", response_model=RoomApplicationOut, status_code=status.HTTP_201_CREATED, summary="Submit a room application")
 def apply_room(application_in: RoomApplicationCreate, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    room = crud.get_room(db, room_id=application_in.room_id)
+    if not room:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
+    if room.available_beds <= 0:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Room is not currently available")
     return crud.create_room_application(db, student_id=current_user.id, room_id=application_in.room_id, notes=application_in.notes)
 
 
-@router.get("/maintenance", response_model=list[MaintenanceRequestOut])
+@router.get("/maintenance", response_model=list[MaintenanceRequestOut], summary="List my maintenance requests")
 def list_my_maintenance(current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     return crud.get_maintenance_requests_for_student(db, student_id=current_user.id)
 
 
-@router.post("/maintenance", response_model=MaintenanceRequestOut)
+@router.post("/maintenance", response_model=MaintenanceRequestOut, status_code=status.HTTP_201_CREATED, summary="Submit a maintenance request")
 def submit_maintenance(request_in: MaintenanceRequestCreate, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     return crud.create_maintenance_request(db, student_id=current_user.id, title=request_in.title, description=request_in.description)
 
 
-@router.post("/payments/mpesa", response_model=PaymentOut)
+@router.post("/payments/mpesa", response_model=PaymentOut, status_code=status.HTTP_201_CREATED, summary="Start an M-Pesa payment")
 def start_mpesa_payment(payment_in: PaymentInitiate, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     try:
         response = mpesa.initiate_stk_push(
@@ -63,6 +68,6 @@ def start_mpesa_payment(payment_in: PaymentInitiate, current_user=Depends(get_cu
     return payment
 
 
-@router.get("/payments", response_model=list[PaymentOut])
+@router.get("/payments", response_model=list[PaymentOut], summary="List my payments")
 def list_my_payments(current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     return crud.list_payments(db, student_id=current_user.id)
