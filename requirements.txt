@@ -3,8 +3,12 @@ uvicorn[standard]>=0.24.0
 SQLAlchemy>=2.0.0
 psycopg2-binary>=2.9.0
 python-jose[cryptography]>=3.0.0
+<<<<<<< HEAD
 passlib[bcrypt]>=1.7.0
 bcrypt==4.0.1
+=======
+passlib[bcrypt]==1.7.4
+>>>>>>> a2a34afcfa58d5e13107a7a7d337162c9fb82902
 alembic>=1.11.0
 python-dotenv>=1.0.0
 requests>=2.31.0
