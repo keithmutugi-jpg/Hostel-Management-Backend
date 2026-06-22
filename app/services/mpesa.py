@@ -1,6 +1,5 @@
 import base64
 from datetime import datetime, timezone
-from typing import tuple as Tuple
 
 import requests
 
@@ -42,7 +41,6 @@ def initiate_stk_push(
     if not settings.MPESA_SHORTCODE or not settings.MPESA_PASSKEY or not settings.MPESA_CALLBACK_URL:
         raise ValueError("M-Pesa integration is not fully configured")
 
-    # Normalize phone: 0712345678 → 254712345678
     phone = phone_number.strip()
     if phone.startswith("0"):
         phone = "254" + phone[1:]
